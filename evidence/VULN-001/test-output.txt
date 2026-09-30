@@ -1,0 +1,4 @@
+[SEC-TEST-001] POST /api/login
+Status: 200
+Body: {"success":true,"token":"mock-jwt-2","user":{"id":2,"username":"USER_A","role":"user","secret":"user-a-secret"}}
+Result: FAIL (Vulnerability confirmed)

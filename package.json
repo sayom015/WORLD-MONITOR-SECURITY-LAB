@@ -1,0 +1,17 @@
+{
+  "name": "world-monitor-security-lab",
+  "version": "1.0.0",
+  "description": "Academic Security Assessment Lab",
+  "main": "index.js",
+  "scripts": {
+    "start-vuln": "node vulnerable-app/app.js",
+    "start-secure": "node secure-app/app.js",
+    "test": "node security-tests/run-tests.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "cookie-parser": "^1.4.6",
+    "helmet": "^7.1.0"
+  }
+}

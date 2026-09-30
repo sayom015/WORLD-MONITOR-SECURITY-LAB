@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Monitor - Security Operations Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            900: '#0b0f19',
+                            800: '#151e2e',
+                            700: '#1e293b',
+                            accent: '#00e5ff',
+                            danger: '#ff3366',
+                            warning: '#ffaa00',
+                            success: '#00e676'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'ui-monospace', 'SFMono-Regular', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;500&display=swap');
+        body { 
+            background-color: #0b0f19; 
+            color: #e2e8f0;
+            background-image: radial-gradient(circle at 50% 0%, #151e2e 0%, transparent 70%);
+        }
+        .glass-panel { 
+            background: rgba(21, 30, 46, 0.7); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(0, 229, 255, 0.1); 
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
+        .glow-text {
+            text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+        }
+        .neon-accent {
+            border-left: 3px solid #00e5ff;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #00e5ff; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row justify-between items-center glass-panel p-6 mb-8">
+            <div class="flex items-center space-x-4">
+                <div class="h-12 w-12 rounded-full bg-cyber-800 flex items-center justify-center border border-cyber-accent shadow-[0_0_15px_rgba(0,229,255,0.3)]">
+                    <i class="fas fa-shield-halved text-cyber-accent text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-wider text-white glow-text">WORLD MONITOR <span class="text-cyber-accent font-light">SOC</span></h1>
+                    <p class="text-xs text-gray-400 font-mono">LAB ENVIRONMENT // LIVE TELEMETRY</p>
+                </div>
+            </div>
+            <div class="mt-4 md:mt-0 flex items-center space-x-4">
+                <span class="flex items-center text-xs font-mono bg-cyber-900 px-3 py-1 rounded-full border border-gray-700">
+                    <span class="h-2 w-2 rounded-full bg-cyber-success mr-2 animate-pulse"></span>
+                    SYSTEMS ONLINE
+                </span>
+                <button onclick="location.reload()" class="bg-cyber-800 hover:bg-cyber-700 text-cyber-accent border border-cyber-accent px-4 py-2 rounded text-sm transition-all duration-300 hover:shadow-[0_0_10px_rgba(0,229,255,0.4)]">
+                    <i class="fas fa-sync-alt mr-2"></i> REFRESH DATA
+                </button>
+            </div>
+        </header>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="kpi-container">
+            <!-- Populated via JS -->
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="glass-panel p-6 lg:col-span-1 flex flex-col">
+                <h3 class="text-gray-400 font-semibold text-sm tracking-wider uppercase mb-4 neon-accent pl-3">Severity Distribution</h3>
+                <div class="flex-grow flex items-center justify-center relative h-64">
+                    <canvas id="severityChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="glass-panel p-6 lg:col-span-2 flex flex-col">
+                <h3 class="text-gray-400 font-semibold text-sm tracking-wider uppercase mb-4 neon-accent pl-3">OWASP Category Mapping</h3>
+                <div class="flex-grow relative h-64 w-full">
+                    <canvas id="owaspChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Findings Table -->
+        <div class="glass-panel overflow-hidden mt-8">
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center">
+                <h3 class="text-gray-400 font-semibold text-sm tracking-wider uppercase neon-accent pl-3">Identified Vulnerabilities</h3>
+                <span class="text-xs font-mono text-gray-500">SORTED BY: CVSS SCORE (DESC)</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-cyber-800/50 text-xs font-mono text-gray-400 border-b border-gray-700">
+                            <th class="p-4 font-medium uppercase tracking-wider">ID</th>
+                            <th class="p-4 font-medium uppercase tracking-wider">Vulnerability Title</th>
+                            <th class="p-4 font-medium uppercase tracking-wider">Severity</th>
+                            <th class="p-4 font-medium uppercase tracking-wider">CVSS</th>
+                            <th class="p-4 font-medium uppercase tracking-wider">OWASP</th>
+                            <th class="p-4 font-medium uppercase tracking-wider text-center">Status</th>
+                            <th class="p-4 font-medium uppercase tracking-wider text-center">Remediated</th>
+                        </tr>
+                    </thead>
+                    <tbody id="findings-table" class="divide-y divide-gray-800/50 text-sm">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer class="text-center text-xs text-gray-600 font-mono mt-8 pb-8">
+            World Monitor Security Assessment Laboratory &copy; 2026. Academic use only.
+        </footer>
+    </div>
+
+    <script>
+        // Utility for severity colors
+        const getSeverityColor = (sev) => {
+            if(sev === 'Critical') return '#ff003c';
+            if(sev === 'High') return '#ff3366';
+            if(sev === 'Medium') return '#ffaa00';
+            if(sev === 'Low') return '#00e5ff';
+            return '#64748b';
+        };
+
+        const getSeverityBadge = (sev) => {
+            const colorClass = 
+                sev === 'High' ? 'bg-cyber-danger/20 text-cyber-danger border-cyber-danger/50' : 
+                sev === 'Medium' ? 'bg-cyber-warning/20 text-cyber-warning border-cyber-warning/50' : 
+                'bg-cyber-accent/20 text-cyber-accent border-cyber-accent/50';
+            return `<span class="px-2 py-1 rounded-sm border text-xs font-bold uppercase tracking-wide ${colorClass}">${sev}</span>`;
+        };
+
+        fetch('/api/results')
+            .then(res => res.json())
+            .then(data => {
+                // 1. Render KPIs
+                document.getElementById('kpi-container').innerHTML = `
+                    <div class="glass-panel p-6 relative overflow-hidden group">
+                        <div class="absolute -right-6 -top-6 text-gray-800/50 group-hover:text-cyber-accent/10 transition-colors duration-500">
+                            <i class="fas fa-vial text-8xl"></i>
+                        </div>
+                        <h3 class="text-gray-400 font-medium text-xs tracking-widest uppercase mb-1">Total Tests</h3>
+                        <p class="text-4xl font-mono font-light text-white">${data.totalTests}</p>
+                    </div>
+                    <div class="glass-panel p-6 relative overflow-hidden group">
+                        <div class="absolute -right-6 -top-6 text-gray-800/50 group-hover:text-cyber-success/10 transition-colors duration-500">
+                            <i class="fas fa-check-shield text-8xl"></i>
+                        </div>
+                        <h3 class="text-gray-400 font-medium text-xs tracking-widest uppercase mb-1">Passed (Secure)</h3>
+                        <p class="text-4xl font-mono font-light text-cyber-success">${data.passed}</p>
+                    </div>
+                    <div class="glass-panel p-6 relative overflow-hidden group">
+                        <div class="absolute -right-6 -top-6 text-gray-800/50 group-hover:text-cyber-danger/10 transition-colors duration-500">
+                            <i class="fas fa-bug text-8xl"></i>
+                        </div>
+                        <h3 class="text-gray-400 font-medium text-xs tracking-widest uppercase mb-1">Failed (Vuln)</h3>
+                        <p class="text-4xl font-mono font-light text-cyber-danger">${data.failed}</p>
+                    </div>
+                    <div class="glass-panel p-6 relative overflow-hidden group">
+                        <div class="absolute -right-6 -top-6 text-gray-800/50 group-hover:text-cyber-accent/10 transition-colors duration-500">
+                            <i class="fas fa-clipboard-list text-8xl"></i>
+                        </div>
+                        <h3 class="text-gray-400 font-medium text-xs tracking-widest uppercase mb-1">Total Findings</h3>
+                        <p class="text-4xl font-mono font-light text-cyber-accent">${data.findings.length}</p>
+                    </div>
+                `;
+
+                // 2. Data Processing for Charts
+                const sevCounts = { High: 0, Medium: 0, Low: 0 };
+                const owaspCounts = {};
+
+                data.findings.forEach(f => {
+                    if(sevCounts[f.severity] !== undefined) sevCounts[f.severity]++;
+                    owaspCounts[f.owasp] = (owaspCounts[f.owasp] || 0) + 1;
+                });
+
+                // Chart defaults
+                Chart.defaults.color = '#94a3b8';
+                Chart.defaults.font.family = 'Inter';
+
+                // Severity Doughnut Chart
+                new Chart(document.getElementById('severityChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['High', 'Medium', 'Low'],
+                        datasets: [{
+                            data: [sevCounts.High, sevCounts.Medium, sevCounts.Low],
+                            backgroundColor: ['#ff3366', '#ffaa00', '#00e5ff'],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '75%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { boxWidth: 12, usePointStyle: true, padding: 20 } }
+                        }
+                    }
+                });
+
+                // OWASP Bar Chart
+                const owaspLabels = Object.keys(owaspCounts);
+                const owaspData = Object.values(owaspCounts);
+                
+                new Chart(document.getElementById('owaspChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: owaspLabels,
+                        datasets: [{
+                            label: 'Vulnerabilities',
+                            data: owaspData,
+                            backgroundColor: 'rgba(0, 229, 255, 0.2)',
+                            borderColor: '#00e5ff',
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { stepSize: 1 } },
+                            x: { grid: { display: false } }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        }
+                    }
+                });
+
+                // 3. Populate Table (Sorted by CVSS descending)
+                const tbody = document.getElementById('findings-table');
+                const sortedFindings = [...data.findings].sort((a, b) => parseFloat(b.cvss || 0) - parseFloat(a.cvss || 0));
+
+                sortedFindings.forEach(f => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-cyber-800/30 transition-colors";
+                    
+                    row.innerHTML = `
+                        <td class="p-4 whitespace-nowrap font-mono text-cyber-accent">${f.id}</td>
+                        <td class="p-4 whitespace-nowrap font-medium text-gray-200">${f.title}</td>
+                        <td class="p-4 whitespace-nowrap">${getSeverityBadge(f.severity)}</td>
+                        <td class="p-4 whitespace-nowrap font-mono text-gray-400">${f.cvss}</td>
+                        <td class="p-4 whitespace-nowrap text-gray-400 font-mono text-xs">${f.owasp}</td>
+                        <td class="p-4 whitespace-nowrap text-center">
+                            <span class="text-xs uppercase tracking-wide text-gray-400 bg-gray-800 px-2 py-1 rounded border border-gray-700">${f.status}</span>
+                        </td>
+                        <td class="p-4 whitespace-nowrap text-center">
+                            ${f.remediated === 'Yes' 
+                                ? '<i class="fas fa-check-circle text-cyber-success text-lg drop-shadow-[0_0_5px_rgba(0,230,118,0.5)]"></i>' 
+                                : '<i class="fas fa-times-circle text-cyber-danger text-lg drop-shadow-[0_0_5px_rgba(255,51,102,0.5)]"></i>'}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(err => {
+                console.error('Error fetching dashboard data:', err);
+                document.getElementById('kpi-container').innerHTML = `<div class="col-span-full p-4 bg-cyber-danger/20 text-cyber-danger rounded border border-cyber-danger text-center">Error loading telemetry data. Ensure the Node.js server and tests have been executed.</div>`;
+            });
+    </script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+{
+  "totalTests": 3,
+  "passed": 1,
+  "failed": 2,
+  "findings": [
+    {
+      "id": "VULN-001",
+      "title": "Broken Authentication",
+      "severity": "High",
+      "cvss": "8.1",
+      "owasp": "A07",
+      "status": "Confirmed",
+      "remediated": "Yes"
+    },
+    {
+      "id": "VULN-002",
+      "title": "Insecure Direct Object Reference (IDOR)",
+      "severity": "Medium",
+      "cvss": "6.5",
+      "owasp": "A01",
+      "status": "Confirmed",
+      "remediated": "Yes"
+    },
+    {
+      "id": "VULN-003",
+      "title": "Missing Function-Level Auth",
+      "severity": "Medium",
+      "cvss": "6.5",
+      "owasp": "A01",
+      "status": "Confirmed",
+      "remediated": "Yes"
+    },
+    {
+      "id": "VULN-005",
+      "title": "Reflected XSS",
+      "severity": "Medium",
+      "cvss": "5.4",
+      "owasp": "A03",
+      "status": "Confirmed",
+      "remediated": "Yes"
+    },
+    {
+      "id": "VULN-007",
+      "title": "Sensitive Data Exposure",
+      "severity": "Medium",
+      "cvss": "4.3",
+      "owasp": "A04",
+      "status": "Confirmed",
+      "remediated": "Yes"
+    }
+  ]
+}
